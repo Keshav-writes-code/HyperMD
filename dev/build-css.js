@@ -2,13 +2,13 @@
 
 const path = require('path')
 const fs = require('fs')
-const glob = require('glob')
+const { glob } = require('glob')
 const sass = require('sass')
 
 function scan_and_compile(pattern = "**/*.scss", watch = false) {
   glob(pattern, {
     ignore: "node_modules/**/*"
-  }, (err, matches) => {
+  }).then(matches => {
     matches.forEach(filename => {
       compile_sass(filename)
 
@@ -18,26 +18,28 @@ function scan_and_compile(pattern = "**/*.scss", watch = false) {
         fs.watchFile(filename, () => { compile_sass(filename) })
       }
     })
+  }, err => {
+    console.error("Glob error:", err)
   })
 }
 
 function compile_sass(sourceFilename) {
   console.log("[SCSS] Compiling " + sourceFilename)
   var outputFilename = sourceFilename.replace(/\.s[ac]ss$/, ".css")
-  var proc = sass.render({
-    file: sourceFilename,
-    outFile: outputFilename
-  }, function (err, result) {
-    if (err) console.log(err)
-    else {
-      fs.writeFile(outputFilename, result.css, function (err) {
-        if (!err) {
-          console.log("[SCSS] finished " + sourceFilename)
-          if (exports.onChanged) exports.onChanged(sourceFilename, outputFilename)
-        }
-      });
-    }
-  })
+
+  try {
+    const result = sass.compile(sourceFilename);
+    fs.writeFile(outputFilename, result.css, function (err) {
+      if (!err) {
+        console.log("[SCSS] finished " + sourceFilename)
+        if (exports.onChanged) exports.onChanged(sourceFilename, outputFilename)
+      } else {
+        console.error(err)
+      }
+    });
+  } catch (err) {
+    console.error(err)
+  }
 }
 
 if (require.main === module) {

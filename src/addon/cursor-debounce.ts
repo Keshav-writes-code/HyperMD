@@ -77,8 +77,8 @@ export class CursorDebounce implements Addon.Addon, Options /* if needed */ {
 
   constructor(public cm: cm_t) {
     new FlipFlop(
-      /* ON  */() => { cm.on('mousedown', this.mouseDownHandler) },
-      /* OFF */() => { cm.off('mousedown', this.mouseDownHandler) }
+      /* ON  */() => { cm.on('mousedown', this.mouseDownHandler as any) },
+      /* OFF */() => { cm.off('mousedown', this.mouseDownHandler as any) }
     ).bind(this, "enabled", true)
   }
 

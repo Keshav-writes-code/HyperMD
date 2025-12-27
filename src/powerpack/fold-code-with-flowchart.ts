@@ -33,7 +33,7 @@ import { getAddon as getFold } from "../addon/fold"
 
 export const FlowchartRenderer: CodeRenderer = (code, info) => {
   var fc = flowchart.parse(code)
-  if (Object.keys(fc.symbols).length === 0) return null
+  if (Object.keys((fc as any).symbols).length === 0) return null
 
   var el = document.createElement('div')
   el.setAttribute('class', 'hmd-fold-code-image hmd-fold-code-flowchart')

@@ -76,13 +76,13 @@ export class TableAlign implements Addon.Addon, Options /* if needed */ {
 
     new FlipFlop(
       /* ON  */() => {
-        cm.on("renderLine", this._procLine)
+        cm.on("renderLine" as any, this._procLine as any)
         cm.on("update", this.updateStyle)
         cm.refresh()
         document.head.appendChild(this.styleEl)
       },
       /* OFF */() => {
-        cm.off("renderLine", this._procLine)
+        cm.off("renderLine" as any, this._procLine as any)
         cm.off("update", this.updateStyle)
         document.head.removeChild(this.styleEl)
       }

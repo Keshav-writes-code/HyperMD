@@ -228,7 +228,7 @@ export class Click implements Addon.Addon, Options {
   private _KeyDetectorActive: boolean
 
   /** remove modifier className to editor DOM */
-  private _mouseMove_keyDetect = (ev: KeyboardEvent) => {
+  private _mouseMove_keyDetect = (ev: MouseEvent) => {
     var el = this.el
     var className = el.className, newClassName = className
 

@@ -17,9 +17,9 @@ import { defaultOption, EmojiChecker, EmojiRenderer } from '../addon/fold-emoji'
 import 'emojione/extras/css/emojione.min.css'
 
 /** emojione doesn't have AMD declaration. load it from browser if needed */
-var emojione: typeof _emojione_module = _emojione_module || this['emojione'] || window['emojione']
+var emojione: typeof _emojione_module = _emojione_module || (window as any)['emojione']
 
-export const emojioneChecker: EmojiChecker = (text) => emojione.shortnameToUnicode(text) != text;
+export const emojioneChecker: EmojiChecker = (text) => emojione && emojione.shortnameToUnicode(text) != text;
 export const emojioneRenderer: EmojiRenderer = (text) => {
   var html = emojione.shortnameToImage(text)
   if (!/^<img /i.test(html)) return null

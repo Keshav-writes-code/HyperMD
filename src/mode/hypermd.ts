@@ -7,7 +7,7 @@
 import * as CodeMirror from "codemirror"
 import "codemirror/mode/markdown/markdown"
 
-import "./hypermd.css"
+import "../../mode/hypermd.css"
 
 /**
  * Markdown Extension Tokens
@@ -48,7 +48,7 @@ export interface MarkdownState {
   inline: TokenFunc,
   text: TokenFunc,
 
-  formatting: string | string[] | false,
+  formatting: string | string[] | false | any, // Use any to avoid type mismatches with CM5 internals
   linkText: boolean,
   linkHref: boolean,
   linkTitle: boolean,
@@ -231,7 +231,7 @@ CodeMirror.defineMode("hypermd", function (cmCfg, modeCfgUser) {
       "hmdNextPos", "hmdNextState", "hmdNextStyle",
       "hmdHashtag",
     ]
-    for (const key of keys) ans[key] = s[key]
+    for (const key of keys) (ans as any)[key] = s[key]
 
     ans.hmdTableColumns = s.hmdTableColumns.slice(0)
 
@@ -263,7 +263,7 @@ CodeMirror.defineMode("hypermd", function (cmCfg, modeCfgUser) {
     var mode = state.hmdInnerMode || rawMode
     var f = mode.indent
 
-    if (typeof f === 'function') return f.apply(mode, arguments)
+    if (typeof f === 'function') return f.apply(mode, arguments as any)
     return CodeMirror.Pass
   }
 
@@ -313,7 +313,7 @@ CodeMirror.defineMode("hypermd", function (cmCfg, modeCfgUser) {
       // now implement some extra features that require higher priority than CodeMirror's markdown
 
       //#region Math
-      if (modeCfg.math && inMarkdownInline && (tmp = stream.match(/^\${1,2}/, false))) {
+      if (modeCfg.math && inMarkdownInline && (tmp = stream.match(/^\${1,2}/, false) as RegExpMatchArray)) {
         let endTag = tmp[0]
         let mathLevel = endTag.length as (1 | 2)
         if (mathLevel === 2 || stream.string.slice(stream.pos).match(/[^\\]\$/)) {
@@ -325,7 +325,7 @@ CodeMirror.defineMode("hypermd", function (cmCfg, modeCfgUser) {
           ans += enterMode(stream, state, texMode, {
             style: "math",
             skipFirstToken: noTexMode, // if stex mode exists, current token is valid in stex
-            fallbackMode: () => createDummyMode(endTag),
+            fallbackMode: () => createDummyMode(endTag) as any,
             exitChecker: createSimpleInnerModeExitChecker(endTag, {
               style: "formatting formatting-math formatting-math-end math-" + mathLevel
             })
@@ -338,11 +338,11 @@ CodeMirror.defineMode("hypermd", function (cmCfg, modeCfgUser) {
       //#endregion
 
       //#region [OrgMode] markup
-      if (bol && modeCfg.orgModeMarkup && (tmp = stream.match(/^\#\+(\w+\:?)\s*/))) {
+      if (bol && modeCfg.orgModeMarkup && (tmp = stream.match(/^\#\+(\w+\:?)\s*/) as RegExpMatchArray)) {
         // Support #+TITLE: This is the title of the document
 
         if (!stream.eol()) {
-          state.hmdOverride = (stream, state) => {
+          state.hmdOverride = (stream: any, state: any) => {
             stream.skipToEnd()
             state.hmdOverride = null
             return "string hmd-orgmode-markup"
@@ -379,7 +379,7 @@ CodeMirror.defineMode("hypermd", function (cmCfg, modeCfgUser) {
       state.hmdNextStyle = null
       state.hmdNextPos = null
     } else {
-      ans += " " + (rawMode.token(stream, state) || "")
+      ans += " " + (rawMode.token(stream, state as any) || "")
     }
 
     // add extra styles
@@ -398,7 +398,7 @@ CodeMirror.defineMode("hypermd", function (cmCfg, modeCfgUser) {
     // If find a markdown extension token (which is not escaped),
     // break current parsed string into two parts and the first char of next part is the markdown extension token
     if (inMarkdownInline && (tmp = stream.current().match(tokenBreakRE))) {
-      stream.pos = stream.start + tmp.index + 1 // rewind
+      stream.pos = stream.start + (tmp.index || 0) + 1 // rewind
     }
     var current = stream.current()
 
@@ -468,7 +468,7 @@ CodeMirror.defineMode("hypermd", function (cmCfg, modeCfgUser) {
         if (/^>\s+$/.test(current) && stream.peek() != ">") {
           stream.pos = stream.start + 1 // rewind!
           current = ">"
-          state.hmdOverride = (stream, state) => {
+          state.hmdOverride = (stream: any, state: any) => {
             stream.match(listInQuoteRE)
             state.hmdOverride = null
             return "hmd-indent-in-quote line-HyperMD-quote line-HyperMD-quote-" + state.quote
@@ -512,7 +512,7 @@ CodeMirror.defineMode("hypermd", function (cmCfg, modeCfgUser) {
       if (wasLinkText !== state.linkText) {
         if (!wasLinkText) {
           // entering a link
-          tmp = stream.match(/^([^\]]+)\](\(| ?\[|\:)?/, false)
+          tmp = stream.match(/^([^\]]+)\](\(| ?\[|\:)?/, false) as RegExpMatchArray
           if (!tmp) { // maybe met a line-break in link text?
             state.hmdLinkType = LinkType.BARELINK
           } else if (!tmp[2]) { // barelink
@@ -573,7 +573,7 @@ CodeMirror.defineMode("hypermd", function (cmCfg, modeCfgUser) {
 
         let escapedLength = current.length - 1
         let escapedCharStyle = ans.replace("formatting-escape", "escape") + " hmd-escape-char"
-        state.hmdOverride = (stream, state) => { // one-time token() func
+        state.hmdOverride = (stream: any, state: any) => { // one-time token() func
           stream.pos += escapedLength
           state.hmdOverride = null
           return escapedCharStyle.trim()

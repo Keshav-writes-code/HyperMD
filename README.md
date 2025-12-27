@@ -15,7 +15,7 @@
 
 ```javascript
 // npm install --save hypermd codemirror
-var HyperMD = require('hypermd')
+import * as HyperMD from 'hypermd'
 var myTextarea = document.getElementById('input-area')
 var editor = HyperMD.fromTextArea(myTextarea)
 ```
@@ -23,6 +23,14 @@ var editor = HyperMD.fromTextArea(myTextarea)
 [![Remix on Glitch](https://cdn.glitch.com/2703baf2-b643-4da7-ab91-7ee2a2d00b5b%2Fremix-button.svg)](https://glitch.com/edit/#!/remix/hello-hypermd)
 
 Also for RequireJS, Parcel, webpack, plain browser env. [Read the Doc](./docs/quick-start.md)
+
+## Development
+
+1. **Install dependencies**: `npm install`
+2. **Start dev server**: `npm run dev` (uses Vite)
+3. **Build**: `npm run build` (generates `dist/`)
+4. **Lint**: `npm run lint`
+5. **Format**: `npm run format`
 
 
 ## Why use HyperMD?

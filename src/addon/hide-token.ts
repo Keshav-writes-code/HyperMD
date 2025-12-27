@@ -115,14 +115,14 @@ export class HideToken implements Addon.Addon, Options {
     new FlipFlop(
       /* ON  */() => {
         cm.on("cursorActivity", this.cursorActivityHandler)
-        cm.on("renderLine", this.renderLineHandler)
+        cm.on("renderLine" as any, this.renderLineHandler as any)
         cm.on("update", this.update)
         this.update()
         cm.refresh()
       },
       /* OFF */() => {
         cm.off("cursorActivity", this.cursorActivityHandler)
-        cm.off("renderLine", this.renderLineHandler)
+        cm.off("renderLine" as any, this.renderLineHandler as any)
         cm.off("update", this.update)
         this.update.stop()
         cm.refresh()
@@ -246,7 +246,7 @@ export class HideToken implements Addon.Addon, Options {
       /* TODO: If use AST, compute `spanBeginCharInCurrentLine` in another way */
       const spanBeginCharInCurrentLine: number = span.begin
 
-      while (iNodeHint < nodeCount && map[iNodeHint * 3 + 1] < spanBeginCharInCurrentLine) iNodeHint++
+      while (iNodeHint < nodeCount && (map[iNodeHint * 3 + 1] as any) < spanBeginCharInCurrentLine) iNodeHint++
 
       let shallHideTokens = true
 

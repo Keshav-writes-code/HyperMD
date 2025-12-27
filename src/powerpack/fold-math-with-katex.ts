@@ -47,7 +47,7 @@ export class KatexRenderer implements MathRenderer {
       }
     } catch (err) {
       // failed to render!
-      errorEl.textContent = err && err.message
+      errorEl.textContent = err && (err as any).message
 
       if (errorEl.parentElement !== el) {
         el.textContent = ""
