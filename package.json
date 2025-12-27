@@ -1,6 +1,6 @@
 {
   "name": "hypermd",
-  "version": "0.3.11",
+  "version": "0.3.12",
   "description": "A full-featured Markdown editor, breaks the wall between writing and preview.",
   "main": "./dist/hypermd.umd.js",
   "module": "./dist/hypermd.es.js",
