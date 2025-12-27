@@ -80,8 +80,8 @@ export class Paste implements Addon.Addon, Options /* if needed */ {
 
   constructor(public cm: cm_t) {
     new FlipFlop(
-      /* ON  */() => { cm.on('paste', this.pasteHandler) },
-      /* OFF */() => { cm.off('paste', this.pasteHandler) }
+      /* ON  */() => { cm.on('paste', this.pasteHandler as any) },
+      /* OFF */() => { cm.off('paste', this.pasteHandler as any) }
     ).bind(this, "enabled", true)
   }
 

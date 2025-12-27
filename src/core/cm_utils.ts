@@ -342,7 +342,7 @@ export namespace TokenSeeker {
  */
 export function getEveryCharToken(line: CodeMirror.LineHandle): string[] {
   var ans = new Array(line.text.length)
-  var ss = line.styles
+  var ss = line.styles as any[]
   var i = 0
 
   if (ss) {
