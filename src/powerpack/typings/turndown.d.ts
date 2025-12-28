@@ -1,14 +1,13 @@
 declare class TurndownService {
-  constructor(opts?: object);
-  turndown(html: string): string;
-  use(plugin: any): void;
+  constructor(opts?: object)
+  turndown(html: string): string
+  use(plugin: any): void
 }
 
-declare module TurndownService {
-}
+declare namespace TurndownService {}
 
 declare const turndownPluginGfm
 
-declare module "turndown" {
+declare module 'turndown' {
   export = TurndownService
 }

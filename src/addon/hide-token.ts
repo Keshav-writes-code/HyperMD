@@ -7,11 +7,18 @@
 //
 
 import * as CodeMirror from 'codemirror'
-import { Addon, FlipFlop, cm_internal, debounce, suggestedEditorConfig, normalVisualConfig } from '../core'
+import {
+  Addon,
+  FlipFlop,
+  cm_internal,
+  debounce,
+  suggestedEditorConfig,
+  normalVisualConfig,
+} from '../core'
 
 import { cm_t } from '../core/type'
-import { OrderedRange, orderedRange, rangesIntersect } from '../core/cm_utils';
-import { getLineSpanExtractor, Span } from '../core/line-spans';
+import { OrderedRange, orderedRange, rangesIntersect } from '../core/cm_utils'
+import { getLineSpanExtractor, Span } from '../core/line-spans'
 
 const DEBUG = false
 
@@ -19,7 +26,8 @@ const DEBUG = false
 
 /** check if has the class and remove it */
 function rmClass(el: HTMLElement, className: string): boolean {
-  let c = ' ' + el.className + ' ', cnp = ' ' + className + ' '
+  let c = ' ' + el.className + ' ',
+    cnp = ' ' + className + ' '
   if (c.indexOf(cnp) === -1) return false
   el.className = c.replace(cnp, '').trim()
   return true
@@ -27,9 +35,10 @@ function rmClass(el: HTMLElement, className: string): boolean {
 
 /** check if NOT has the class and add it */
 function addClass(el: HTMLElement, className: string): boolean {
-  let c = ' ' + el.className + ' ', cnp = ' ' + className + ' '
+  let c = ' ' + el.className + ' ',
+    cnp = ' ' + className + ' '
   if (c.indexOf(cnp) !== -1) return false
-  el.className = (el.className + ' ' + className)
+  el.className = el.className + ' ' + className
   return true
 }
 
@@ -52,14 +61,14 @@ export interface Options extends Addon.AddonOptions {
 export const defaultOption: Options = {
   enabled: false,
   line: true,
-  tokenTypes: "em|strong|strikethrough|code|linkText|task".split("|"),
+  tokenTypes: 'em|strong|strikethrough|code|linkText|task'.split('|'),
 }
 
 export const suggestedOption: Partial<Options> = {
-  enabled: true,  // we recommend lazy users to enable this fantastic addon!
+  enabled: true, // we recommend lazy users to enable this fantastic addon!
 }
 
-export type OptionValueType = Partial<Options> | boolean | string | string[];
+export type OptionValueType = Partial<Options> | boolean | string | string[]
 
 declare global {
   namespace HyperMD {
@@ -78,62 +87,65 @@ declare global {
 suggestedEditorConfig.hmdHideToken = suggestedOption
 normalVisualConfig.hmdHideToken = false
 
-CodeMirror.defineOption("hmdHideToken", defaultOption, function (cm: cm_t, newVal: OptionValueType) {
+CodeMirror.defineOption(
+  'hmdHideToken',
+  defaultOption,
+  function (cm: cm_t, newVal: OptionValueType) {
+    ///// convert newVal's type to `Partial<Options>`, if it is not.
 
-  ///// convert newVal's type to `Partial<Options>`, if it is not.
+    if (!newVal || typeof newVal === 'boolean') {
+      newVal = { enabled: !!newVal }
+    } else if (typeof newVal === 'string') {
+      newVal = { enabled: true, tokenTypes: newVal.split('|') }
+    } else if (newVal instanceof Array) {
+      newVal = { enabled: true, tokenTypes: newVal }
+    }
 
-  if (!newVal || typeof newVal === "boolean") {
-    newVal = { enabled: !!newVal }
-  } else if (typeof newVal === "string") {
-    newVal = { enabled: true, tokenTypes: newVal.split("|") }
-  } else if (newVal instanceof Array) {
-    newVal = { enabled: true, tokenTypes: newVal }
-  }
+    ///// apply config and write new values into cm
 
-  ///// apply config and write new values into cm
-
-  var inst = getAddon(cm)
-  for (var k in defaultOption) {
-    inst[k] = (k in newVal) ? newVal[k] : defaultOption[k]
-  }
-})
+    var inst = getAddon(cm)
+    for (var k in defaultOption) {
+      inst[k] = k in newVal ? newVal[k] : defaultOption[k]
+    }
+  },
+)
 
 //#endregion
 
 /********************************************************************************** */
 //#region Addon Class
 
-const hideClassName = "hmd-hidden-token"
-const lineInactiveClassName = "hmd-inactive-line"
+const hideClassName = 'hmd-hidden-token'
+const lineInactiveClassName = 'hmd-inactive-line'
 
 export class HideToken implements Addon.Addon, Options {
-  tokenTypes: string[];
-  line: boolean;
-  enabled: boolean;
+  tokenTypes: string[]
+  line: boolean
+  enabled: boolean
 
   constructor(public cm: cm_t) {
     new FlipFlop(
-      /* ON  */() => {
-        cm.on("cursorActivity", this.cursorActivityHandler)
-        cm.on("renderLine" as any, this.renderLineHandler as any)
-        cm.on("update", this.update)
+      /* ON  */ () => {
+        cm.on('cursorActivity', this.cursorActivityHandler)
+        cm.on('renderLine' as any, this.renderLineHandler as any)
+        cm.on('update', this.update)
         this.update()
         cm.refresh()
       },
-      /* OFF */() => {
-        cm.off("cursorActivity", this.cursorActivityHandler)
-        cm.off("renderLine" as any, this.renderLineHandler as any)
-        cm.off("update", this.update)
+      /* OFF */ () => {
+        cm.off('cursorActivity', this.cursorActivityHandler)
+        cm.off('renderLine' as any, this.renderLineHandler as any)
+        cm.off('update', this.update)
         this.update.stop()
         cm.refresh()
-      }
-    ).bind(this, "enabled", true)
+      },
+    ).bind(this, 'enabled', true)
   }
 
   renderLineHandler = (cm: cm_t, line: CodeMirror.LineHandle, el: HTMLPreElement) => {
     // TODO: if we procLine now, we can only get the outdated lineView, lineViewMeasure and lineViewMap. Calling procLine will be wasteful!
     const changed = this.procLine(line, el)
-    if (DEBUG) console.log("renderLine return " + changed)
+    if (DEBUG) console.log('renderLine return ' + changed)
   }
 
   cursorActivityHandler = (doc: CodeMirror.Doc) => {
@@ -158,7 +170,8 @@ export class HideToken implements Addon.Addon, Options {
     if (!pre) pre = lv.text
     if (!pre) return false
 
-    if (DEBUG) if (!pre.isSameNode(lv.text)) console.warn("procLine got different node... " + lineNo)
+    if (DEBUG)
+      if (!pre.isSameNode(lv.text)) console.warn('procLine got different node... ' + lineNo)
 
     const mapInfo = cm_internal.mapFromLineView(lv, line, lineNo)
     const map = mapInfo.map
@@ -168,9 +181,11 @@ export class HideToken implements Addon.Addon, Options {
 
     // change line status
 
-    if (rangesInLine.length === 0) { // inactiveLine
+    if (rangesInLine.length === 0) {
+      // inactiveLine
       if (addClass(pre, lineInactiveClassName)) changed = true
-    } else { // activeLine
+    } else {
+      // activeLine
       if (rmClass(pre, lineInactiveClassName)) changed = true
     }
 
@@ -179,15 +194,20 @@ export class HideToken implements Addon.Addon, Options {
     /**
      * @returns if there are Span Nodes changed
      */
-    function changeVisibilityForSpan(span: Span, shallHideTokens: boolean, iNodeHint?: number): boolean {
+    function changeVisibilityForSpan(
+      span: Span,
+      shallHideTokens: boolean,
+      iNodeHint?: number,
+    ): boolean {
       let changed: boolean = false
 
       iNodeHint = iNodeHint || 0
 
       // iterate the map
       for (let i = iNodeHint; i < nodeCount; i++) {
-        const begin = map[i * 3] as number, end = map[i * 3 + 1] as number
-        const domNode = map[i * 3 + 2] as (Text | HTMLSpanElement)
+        const begin = map[i * 3] as number,
+          end = map[i * 3 + 1] as number
+        const domNode = map[i * 3 + 2] as Text | HTMLSpanElement
 
         if (begin === span.head.start) {
           // find the leading token!
@@ -197,7 +217,11 @@ export class HideToken implements Addon.Addon, Options {
 
             // good. this token can be changed
             const domParent = domNode.parentElement as HTMLSpanElement
-            if (shallHideTokens ? addClass(domParent, hideClassName) : rmClass(domParent, hideClassName)) {
+            if (
+              shallHideTokens
+                ? addClass(domParent, hideClassName)
+                : rmClass(domParent, hideClassName)
+            ) {
               // if (DEBUG) console.log("HEAD DOM CHANGED")
               changed = true
             }
@@ -208,15 +232,20 @@ export class HideToken implements Addon.Addon, Options {
           // search for the tailing token
           if (span.tail && /formatting-/.test(span.tail.type)) {
             for (let j = i + 1; j < nodeCount; j++) {
-              const begin = map[j * 3] as number, end = map[j * 3 + 1] as number
-              const domNode = map[j * 3 + 2] as (Text | HTMLSpanElement)
+              const begin = map[j * 3] as number,
+                end = map[j * 3 + 1] as number
+              const domNode = map[j * 3 + 2] as Text | HTMLSpanElement
 
               if (begin == span.tail.start) {
                 // if (DEBUG) console.log("TAIL DOM CHANGED", domNode)
                 if (domNode.nodeType === Node.TEXT_NODE) {
                   // good. this token can be changed
                   const domParent = domNode.parentElement as HTMLSpanElement
-                  if (shallHideTokens ? addClass(domParent, hideClassName) : rmClass(domParent, hideClassName)) {
+                  if (
+                    shallHideTokens
+                      ? addClass(domParent, hideClassName)
+                      : rmClass(domParent, hideClassName)
+                  ) {
                     changed = true
                   }
                 }
@@ -242,11 +271,15 @@ export class HideToken implements Addon.Addon, Options {
       if (this.tokenTypes.indexOf(span.type) === -1) continue // not-interested span type
 
       /* TODO: Use AST, instead of crafted Position */
-      const spanRange: OrderedRange = [{ line: lineNo, ch: span.begin }, { line: lineNo, ch: span.end }]
+      const spanRange: OrderedRange = [
+        { line: lineNo, ch: span.begin },
+        { line: lineNo, ch: span.end },
+      ]
       /* TODO: If use AST, compute `spanBeginCharInCurrentLine` in another way */
       const spanBeginCharInCurrentLine: number = span.begin
 
-      while (iNodeHint < nodeCount && (map[iNodeHint * 3 + 1] as any) < spanBeginCharInCurrentLine) iNodeHint++
+      while (iNodeHint < nodeCount && (map[iNodeHint * 3 + 1] as any) < spanBeginCharInCurrentLine)
+        iNodeHint++
 
       let shallHideTokens = true
 
@@ -288,7 +321,8 @@ export class HideToken implements Addon.Addon, Options {
     // update this._activedLines and caretAtLines
     for (const selection of selections) {
       let oRange = orderedRange(selection)
-      let line0 = oRange[0].line, line1 = oRange[1].line
+      let line0 = oRange[0].line,
+        line1 = oRange[1].line
       caretAtLines[line0] = caretAtLines[line1] = true
 
       for (let line = line0; line <= line1; line++) {
@@ -299,7 +333,7 @@ export class HideToken implements Addon.Addon, Options {
 
     this._rangesInLine = activedLines
 
-    if (DEBUG) console.log("======= OP START " + Object.keys(activedLines))
+    if (DEBUG) console.log('======= OP START ' + Object.keys(activedLines))
 
     cm.operation(() => {
       // adding "inactive" class
@@ -318,7 +352,7 @@ export class HideToken implements Addon.Addon, Options {
 
       // refresh cursor position if needed
       if (caretLineChanged) {
-        if (DEBUG) console.log("caretLineChanged")
+        if (DEBUG) console.log('caretLineChanged')
         cm.refresh()
 
         // legacy unstable way to update display and caret position:
@@ -327,12 +361,18 @@ export class HideToken implements Addon.Addon, Options {
       }
     })
 
-    if (DEBUG) console.log("======= OP END ")
+    if (DEBUG) console.log('======= OP END ')
   }
 }
 
 //#endregion
 
 /** ADDON GETTER (Singleton Pattern): a editor can have only one HideToken instance */
-export const getAddon = Addon.Getter("HideToken", HideToken, defaultOption /** if has options */)
-declare global { namespace HyperMD { interface HelperCollection { HideToken?: HideToken } } }
+export const getAddon = Addon.Getter('HideToken', HideToken, defaultOption /** if has options */)
+declare global {
+  namespace HyperMD {
+    interface HelperCollection {
+      HideToken?: HideToken
+    }
+  }
+}

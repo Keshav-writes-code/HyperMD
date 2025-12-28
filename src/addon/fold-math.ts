@@ -19,7 +19,7 @@ const DEBUG = false
 /// MATH ENGINE DECLARATION
 /// You may implement a MathRenderer to use other engine, eg. MathJax or KaTex
 
-export type MathRenderMode = "display" | ""
+export type MathRenderMode = 'display' | ''
 export declare abstract class MathRenderer {
   constructor(container: HTMLElement, mode: MathRenderMode)
 
@@ -54,7 +54,7 @@ export const MathFolder: FolderFunc = (stream, token) => {
   // CodeMirror GFM mode split "$$" into two tokens, so do a extra check.
 
   if (tokenLength == 2 && token.string.length == 1) {
-    if (DEBUG) console.log("[FoldMath] $$ is splitted into 2 tokens")
+    if (DEBUG) console.log('[FoldMath] $$ is splitted into 2 tokens')
     let nextToken = stream.lineTokens[stream.i_token + 1]
     if (!nextToken || !mathBeginRE.test(nextToken.type)) return null
   }
@@ -96,7 +96,8 @@ export const MathFolder: FolderFunc = (stream, token) => {
 
   // Now let's make a math widget!
 
-  const isDisplayMode = tokenLength > 1 && from.ch == 0 && (noEndingToken || to.ch >= cm.getLine(to.line).length)
+  const isDisplayMode =
+    tokenLength > 1 && from.ch == 0 && (noEndingToken || to.ch >= cm.getLine(to.line).length)
   var marker = insertMathMark(cm, from, to, expr, tokenLength, isDisplayMode)
   foldMathAddon.editingExpr = null // try to hide preview
   return marker
@@ -105,29 +106,36 @@ export const MathFolder: FolderFunc = (stream, token) => {
 /**
  * Insert a TextMarker, and try to render it with configured MathRenderer.
  */
-export function insertMathMark(cm: cm_t, p1: Position, p2: Position, expression: string, tokenLength: number, isDisplayMode?: boolean): TextMarker {
-  var span = document.createElement("span")
-  span.setAttribute("class", "hmd-fold-math math-" + (isDisplayMode ? 2 : 1))
-  span.setAttribute("title", expression)
+export function insertMathMark(
+  cm: cm_t,
+  p1: Position,
+  p2: Position,
+  expression: string,
+  tokenLength: number,
+  isDisplayMode?: boolean,
+): TextMarker {
+  var span = document.createElement('span')
+  span.setAttribute('class', 'hmd-fold-math math-' + (isDisplayMode ? 2 : 1))
+  span.setAttribute('title', expression)
 
-  var mathPlaceholder = document.createElement("span")
-  mathPlaceholder.setAttribute("class", "hmd-fold-math-placeholder")
+  var mathPlaceholder = document.createElement('span')
+  mathPlaceholder.setAttribute('class', 'hmd-fold-math-placeholder')
   mathPlaceholder.textContent = expression
 
   span.appendChild(mathPlaceholder)
 
   if (DEBUG) {
-    console.log("insert", p1, p2, expression)
+    console.log('insert', p1, p2, expression)
   }
 
   var marker: TextMarker = cm.markText(p1, p2, {
     replacedWith: span,
   })
 
-  span.addEventListener("click", () => breakMark(cm, marker, tokenLength), false)
+  span.addEventListener('click', () => breakMark(cm, marker, tokenLength), false)
 
   const foldMathAddon = getAddon(cm)
-  var mathRenderer = foldMathAddon.createRenderer(span, isDisplayMode ? "display" : "")
+  var mathRenderer = foldMathAddon.createRenderer(span, isDisplayMode ? 'display' : '')
   mathRenderer.onChanged = function () {
     if (mathPlaceholder) {
       span.removeChild(mathPlaceholder)
@@ -135,27 +143,34 @@ export function insertMathMark(cm: cm_t, p1: Position, p2: Position, expression:
     }
     marker.changed()
   }
-  marker.on("clear", function () { mathRenderer.clear() })
-  marker["mathRenderer"] = mathRenderer
-
-  tryToRun(() => {
-    if (DEBUG) console.log("[MATH] Trying to render ", expression)
-    if (!mathRenderer.isReady()) return false
-    mathRenderer.startRender(expression)
-    return true
-  }, 5, () => { // if failed 5 times...
-    marker.clear()
-    if (DEBUG) {
-      console.log("[MATH] engine always not ready. faild to render ", expression, p1)
-    }
+  marker.on('clear', function () {
+    mathRenderer.clear()
   })
+  marker['mathRenderer'] = mathRenderer
+
+  tryToRun(
+    () => {
+      if (DEBUG) console.log('[MATH] Trying to render ', expression)
+      if (!mathRenderer.isReady()) return false
+      mathRenderer.startRender(expression)
+      return true
+    },
+    5,
+    () => {
+      // if failed 5 times...
+      marker.clear()
+      if (DEBUG) {
+        console.log('[MATH] engine always not ready. faild to render ', expression, p1)
+      }
+    },
+  )
 
   return marker
 }
 
 //#endregion
 
-registerFolder("math", MathFolder, true)
+registerFolder('math', MathFolder, true)
 
 /********************************************************************************** */
 //#region Default Renderer
@@ -164,10 +179,19 @@ export class DumbRenderer implements MathRenderer {
   public img: HTMLImageElement
   public last_expr: string
 
-  constructor(public container: HTMLElement, mode: MathRenderMode) {
-    var img = document.createElement("img")
-    img.setAttribute("class", "hmd-math-dumb")
-    img.addEventListener("load", () => { if (this.onChanged) this.onChanged(this.last_expr) }, false)
+  constructor(
+    public container: HTMLElement,
+    mode: MathRenderMode,
+  ) {
+    var img = document.createElement('img')
+    img.setAttribute('class', 'hmd-math-dumb')
+    img.addEventListener(
+      'load',
+      () => {
+        if (this.onChanged) this.onChanged(this.last_expr)
+      },
+      false,
+    )
 
     this.img = img
     container.appendChild(img)
@@ -175,7 +199,7 @@ export class DumbRenderer implements MathRenderer {
 
   startRender(expr: string): void {
     this.last_expr = expr
-    this.img.src = "https://latex.codecogs.com/gif.latex?" + encodeURIComponent(expr)
+    this.img.src = 'https://latex.codecogs.com/gif.latex?' + encodeURIComponent(expr)
   }
 
   clear(): void {
@@ -183,7 +207,7 @@ export class DumbRenderer implements MathRenderer {
   }
 
   /** a callback function, called when a rendering work is done */
-  onChanged: (expr: string) => void;
+  onChanged: (expr: string) => void
 
   /** indicate that if the Renderer is ready to execute */
   isReady(): boolean {
@@ -218,11 +242,9 @@ export const defaultOption: Options = {
   onPreviewEnd: null,
 }
 
-export const suggestedOption: Partial<Options> = {
+export const suggestedOption: Partial<Options> = {}
 
-}
-
-export type OptionValueType = Partial<Options> | (typeof MathRenderer);
+export type OptionValueType = Partial<Options> | typeof MathRenderer
 
 declare global {
   namespace HyperMD {
@@ -243,13 +265,12 @@ declare global {
 
 suggestedEditorConfig.hmdFoldMath = suggestedOption
 
-CodeMirror.defineOption("hmdFoldMath", defaultOption, function (cm: cm_t, newVal: OptionValueType) {
-
+CodeMirror.defineOption('hmdFoldMath', defaultOption, function (cm: cm_t, newVal: OptionValueType) {
   ///// convert newVal's type to `Partial<Options>`, if it is not.
 
   if (!newVal) {
     newVal = {}
-  } else if (typeof newVal === "function") {
+  } else if (typeof newVal === 'function') {
     newVal = { renderer: newVal }
   }
 
@@ -257,7 +278,7 @@ CodeMirror.defineOption("hmdFoldMath", defaultOption, function (cm: cm_t, newVal
 
   var inst = getAddon(cm)
   for (var k in defaultOption) {
-    inst[k] = (k in newVal) ? newVal[k] : defaultOption[k]
+    inst[k] = k in newVal ? newVal[k] : defaultOption[k]
   }
 })
 
@@ -267,23 +288,27 @@ CodeMirror.defineOption("hmdFoldMath", defaultOption, function (cm: cm_t, newVal
 //#region Addon Class
 
 export class FoldMath implements Addon.Addon, Options {
-  renderer: typeof MathRenderer;
-  onPreview: (expr: string) => void;
-  onPreviewEnd: () => void;
+  renderer: typeof MathRenderer
+  onPreview: (expr: string) => void
+  onPreviewEnd: () => void
 
   /** current previewing TeX expression. could be null */
   editingExpr: string
 
   constructor(public cm: cm_t) {
     new FlipFlop<string>(
-      /** CHANGED */(expr) => { this.onPreview && this.onPreview(expr) },
-      /** HIDE    */() => { this.onPreviewEnd && this.onPreviewEnd() },
-      null
-    ).bind(this, "editingExpr")
+      /** CHANGED */ (expr) => {
+        this.onPreview && this.onPreview(expr)
+      },
+      /** HIDE    */ () => {
+        this.onPreviewEnd && this.onPreviewEnd()
+      },
+      null,
+    ).bind(this, 'editingExpr')
   }
 
   public createRenderer(container: HTMLElement, mode: MathRenderMode): MathRenderer {
-    var RendererClass = this.renderer || DumbRenderer as any
+    var RendererClass = this.renderer || (DumbRenderer as any)
     return new RendererClass(container, mode)
   }
 }
@@ -291,5 +316,11 @@ export class FoldMath implements Addon.Addon, Options {
 //#endregion
 
 /** ADDON GETTER (Singleton Pattern): a editor can have only one FoldMath instance */
-export const getAddon = Addon.Getter("FoldMath", FoldMath, defaultOption /** if has options */)
-declare global { namespace HyperMD { interface HelperCollection { FoldMath?: FoldMath } } }
+export const getAddon = Addon.Getter('FoldMath', FoldMath, defaultOption /** if has options */)
+declare global {
+  namespace HyperMD {
+    interface HelperCollection {
+      FoldMath?: FoldMath
+    }
+  }
+}

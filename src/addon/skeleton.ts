@@ -25,7 +25,6 @@ import * as CodeMirror from 'codemirror'
 import { Addon, FlipFlop, suggestedEditorConfig } from '../core'
 import { cm_t } from '../core/type'
 
-
 /********************************************************************************** */
 //#region CodeMirror Extension
 // add methods to all CodeMirror editors
@@ -34,11 +33,15 @@ import { cm_t } from '../core/type'
 export const Extensions = {
   hmdRollAndDice(this: cm_t, foo: string, bar: string) {
     return 42
-  }
+  },
 }
 
 export type ExtensionsType = typeof Extensions
-declare global { namespace HyperMD { interface Editor extends ExtensionsType { } } }
+declare global {
+  namespace HyperMD {
+    interface Editor extends ExtensionsType {}
+  }
+}
 
 for (var name in Extensions) {
   CodeMirror.defineExtension(name, Extensions[name])
@@ -63,10 +66,10 @@ export const defaultOption: Options = {
 }
 
 export const suggestedOption: Partial<Options> = {
-  enabled: true,  // we recommend lazy users to enable this fantastic addon!
+  enabled: true, // we recommend lazy users to enable this fantastic addon!
 }
 
-export type OptionValueType = Partial<Options> | boolean;
+export type OptionValueType = Partial<Options> | boolean
 
 declare global {
   namespace HyperMD {
@@ -84,11 +87,10 @@ declare global {
 
 suggestedEditorConfig.hmdMyAddon = suggestedOption
 
-CodeMirror.defineOption("hmdMyAddon", defaultOption, function (cm: cm_t, newVal: OptionValueType) {
-
+CodeMirror.defineOption('hmdMyAddon', defaultOption, function (cm: cm_t, newVal: OptionValueType) {
   ///// convert newVal's type to `Partial<Options>`, if it is not.
 
-  if (!newVal || typeof newVal === "boolean") {
+  if (!newVal || typeof newVal === 'boolean') {
     newVal = { enabled: !!newVal }
   }
 
@@ -96,7 +98,7 @@ CodeMirror.defineOption("hmdMyAddon", defaultOption, function (cm: cm_t, newVal:
 
   var inst = getAddon(cm)
   for (var k in defaultOption) {
-    inst[k] = (k in newVal) ? newVal[k] : defaultOption[k]
+    inst[k] = k in newVal ? newVal[k] : defaultOption[k]
   }
 })
 
@@ -106,21 +108,31 @@ CodeMirror.defineOption("hmdMyAddon", defaultOption, function (cm: cm_t, newVal:
 //#region Addon Class
 
 export class MyAddon implements Addon.Addon, Options /* if needed */ {
-  enabled: boolean;
+  enabled: boolean
 
   constructor(public cm: cm_t) {
     // options will be initialized to defaultOption when constructor is finished
     // add your code here
 
     new FlipFlop() // use FlipFlop to detect if a option is changed
-      .bind(this, "enabled", true) // <- `true` means `this.enabled` is always a boolean
-      .ON(() => {/*  enable MyAddon here, add event listeners,etc. */ })
-      .OFF(() => {/* disable MyAddon here, remove event listeners  */ })
+      .bind(this, 'enabled', true) // <- `true` means `this.enabled` is always a boolean
+      .ON(() => {
+        /*  enable MyAddon here, add event listeners,etc. */
+      })
+      .OFF(() => {
+        /* disable MyAddon here, remove event listeners  */
+      })
   }
 }
 
 //#endregion
 
 /** ADDON GETTER (Singleton Pattern): a editor can have only one MyAddon instance */
-export const getAddon = Addon.Getter("MyAddon", MyAddon, defaultOption /** if has options */)
-declare global { namespace HyperMD { interface HelperCollection { MyAddon?: MyAddon } } }
+export const getAddon = Addon.Getter('MyAddon', MyAddon, defaultOption /** if has options */)
+declare global {
+  namespace HyperMD {
+    interface HelperCollection {
+      MyAddon?: MyAddon
+    }
+  }
+}

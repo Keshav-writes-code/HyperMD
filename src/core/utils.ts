@@ -6,11 +6,11 @@
  * You shall NOT import this file; please import "core" instead
  */
 
-import * as CodeMirror from "codemirror"
+import * as CodeMirror from 'codemirror'
 import './polyfill'
 
 /** Simple FlipFlop */
-export class FlipFlop<T=boolean> {
+export class FlipFlop<T = boolean> {
   /**
    * Simple FlipFlop
    *
@@ -22,16 +22,21 @@ export class FlipFlop<T=boolean> {
   constructor(
     private on_cb?: (s: T) => void,
     private off_cb?: (s: T) => void,
-    public state: T = (false as any as T),
-    private subkey: string = "enabled"
-  ) {
-  }
+    public state: T = false as any as T,
+    private subkey: string = 'enabled',
+  ) {}
 
   /** set a callback when state is changed and is **NOT** `null`, `false` etc. */
-  ON(callback: (s: T) => void) { this.on_cb = callback; return this }
+  ON(callback: (s: T) => void) {
+    this.on_cb = callback
+    return this
+  }
 
   /** set a callback when state is set to `null`, `false` etc. */
-  OFF(callback: (s: T) => void) { this.off_cb = callback; return this }
+  OFF(callback: (s: T) => void) {
+    this.off_cb = callback
+    return this
+  }
 
   /**
    * Update FlipFlop status, and trig callback function if needed
@@ -40,13 +45,16 @@ export class FlipFlop<T=boolean> {
    * @param {boolean} [toBool] convert retrived value to boolean. default: false
    */
   set(state: T | object, toBool?: boolean) {
-    let newVal: T = (typeof state === 'object' && state) ? state[this.subkey] : state
+    let newVal: T = typeof state === 'object' && state ? state[this.subkey] : state
 
     if (toBool) newVal = !!newVal as any as T
 
     if (newVal === this.state) return
-    if (this.state = newVal) { this.on_cb && this.on_cb(newVal) }
-    else { this.off_cb && this.off_cb(newVal) }
+    if ((this.state = newVal)) {
+      this.on_cb && this.on_cb(newVal)
+    } else {
+      this.off_cb && this.off_cb(newVal)
+    }
   }
 
   setBool(state: boolean) {
@@ -79,8 +87,9 @@ export function tryToRun(fn: () => boolean, times?: number, onFailed?: Function)
       return
     }
 
-    try { if (fn()) return }
-    catch (e) { }
+    try {
+      if (fn()) return
+    } catch (e) {}
 
     setTimeout(nextCycle, delayTime)
     delayTime *= 2
@@ -98,7 +107,10 @@ export function tryToRun(fn: () => boolean, times?: number, onFailed?: Function)
 export function debounce(fn: Function, delay: number): { (): void; stop(): void } {
   var deferTask = null
   var notClearBefore = 0
-  var run = function () { fn(); deferTask = 0; }
+  var run = function () {
+    fn()
+    deferTask = 0
+  }
 
   var ans = function () {
     var nowTime = +new Date()
@@ -107,7 +119,7 @@ export function debounce(fn: Function, delay: number): { (): void; stop(): void 
       else clearTimeout(deferTask)
     }
     deferTask = setTimeout(run, delay)
-    notClearBefore = nowTime + 100  // allow 100ms error
+    notClearBefore = nowTime + 100 // allow 100ms error
   } as any
 
   ans.stop = function () {
@@ -141,7 +153,7 @@ export function repeat<T>(item: T, count: number): T[] {
 }
 
 export function repeatStr(item: string, count: number): string {
-  var ans = ""
+  var ans = ''
   while (count-- > 0) ans += item
   return ans
 }
@@ -150,23 +162,28 @@ export function repeatStr(item: string, count: number): string {
  * Visit element nodes and their children
  */
 export function visitElements(seeds: ArrayLike<HTMLElement>, handler: (el: HTMLElement) => void) {
-  var queue: ArrayLike<HTMLElement>[] = [seeds], tmp: ArrayLike<HTMLElement>
+  var queue: ArrayLike<HTMLElement>[] = [seeds],
+    tmp: ArrayLike<HTMLElement>
 
-  while (tmp = queue.shift()) {
+  while ((tmp = queue.shift())) {
     for (let i = 0; i < tmp.length; i++) {
       const el = tmp[i]
       if (!el || el.nodeType != Node.ELEMENT_NODE) continue
       handler(el)
-      if (el.children && el.children.length > 0) queue.push(el.children as any as ArrayLike<HTMLElement>)
+      if (el.children && el.children.length > 0)
+        queue.push(el.children as any as ArrayLike<HTMLElement>)
     }
   }
 }
 
-
 /**
  * A lazy and simple Element size watcher. NOT WORK with animations
  */
-export function watchSize(el: HTMLElement, onChange: (newWidth: number, newHeight: number, oldWidth: number, oldHeight: number) => void, needPoll?: boolean) {
+export function watchSize(
+  el: HTMLElement,
+  onChange: (newWidth: number, newHeight: number, oldWidth: number, oldHeight: number) => void,
+  needPoll?: boolean,
+) {
   var { width, height } = el.getBoundingClientRect()
 
   /** check size and trig onChange */
@@ -208,9 +225,9 @@ export function watchSize(el: HTMLElement, onChange: (newWidth: number, newHeigh
   function bindEvents(el: HTMLElement) {
     const tagName = el.tagName
     const computedStyle = getComputedStyle(el)
-    const getStyle = (name) => (computedStyle.getPropertyValue(name) || '')
+    const getStyle = (name) => computedStyle.getPropertyValue(name) || ''
 
-    if (getStyle("resize") != 'none') needPoll = true
+    if (getStyle('resize') != 'none') needPoll = true
 
     // size changes if loaded
     if (/^(?:img|video)$/i.test(tagName)) {
@@ -234,5 +251,5 @@ export function watchSize(el: HTMLElement, onChange: (newWidth: number, newHeigh
 
 export function makeSymbol(name: string): symbol | string {
   if (typeof Symbol === 'function') return Symbol(name)
-  return "_\n" + name + "\n_" + Math.floor(Math.random() * 0xFFFF).toString(16)
+  return '_\n' + name + '\n_' + Math.floor(Math.random() * 0xffff).toString(16)
 }

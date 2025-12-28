@@ -25,8 +25,14 @@ import * as CodeMirror from 'codemirror'
 import { Addon, suggestedEditorConfig } from '../core'
 import { cm_t } from '../core/type'
 
-import { FolderFunc, registerFolder, getAddon as getFoldAddon, FoldStream, RequestRangeResult, breakMark } from './fold'
-
+import {
+  FolderFunc,
+  registerFolder,
+  getAddon as getFoldAddon,
+  FoldStream,
+  RequestRangeResult,
+  breakMark,
+} from './fold'
 
 //#region CodeRenderer ------------------------------------------------------------
 
@@ -65,23 +71,22 @@ export interface FoldInfo {
  * 2. if rendered element's dimension is changed, you must call `info.changed()`
  * 3. do NOT use destructuring assignment with `info` !!!
  */
-export type CodeRenderer = (code: string, info: FoldInfo) => HTMLElement;
+export type CodeRenderer = (code: string, info: FoldInfo) => HTMLElement
 
 //#endregion
-
 
 //#region CodeRenderer Registry -----------------------------------------------------
 
 export interface RegistryItem {
-  name: string;
+  name: string
 
   /** enable this CodeRenderer by default */
-  suggested?: boolean;
+  suggested?: boolean
 
   /** the languange name after leading triple-backtick in Markdown  */
-  pattern: string | RegExp | ((language: string) => boolean);
+  pattern: string | RegExp | ((language: string) => boolean)
 
-  renderer: CodeRenderer;
+  renderer: CodeRenderer
 }
 
 export var rendererRegistry: Record<string, RegistryItem> = {}
@@ -97,21 +102,21 @@ export var rendererRegistry: Record<string, RegistryItem> = {}
 export function registerRenderer(info: RegistryItem, force?: boolean) {
   if (!info || !info.name || !info.renderer) return
 
-  var name = info.name;
-  var pattern = info.pattern;
+  var name = info.name
+  var pattern = info.pattern
 
   var registry = rendererRegistry
   if (name in registry) {
     if (!force) {
-      throw new Error(`CodeRenderer ${name} already exists`);
+      throw new Error(`CodeRenderer ${name} already exists`)
     }
   }
 
   if (typeof pattern === 'string') {
-    let t = pattern.toLowerCase();
-    pattern = (lang) => (lang.toLowerCase() === t);
+    let t = pattern.toLowerCase()
+    pattern = (lang) => lang.toLowerCase() === t
   } else if (pattern instanceof RegExp) {
-    pattern = (lang) => (info.pattern as RegExp).test(lang);
+    pattern = (lang) => (info.pattern as RegExp).test(lang)
   }
 
   var newInfo: RegistryItem = {
@@ -121,13 +126,12 @@ export function registerRenderer(info: RegistryItem, force?: boolean) {
     renderer: info.renderer,
   }
 
-  registry[name] = newInfo;
-  defaultOption[name] = false;
-  suggestedOption[name] = newInfo.suggested;
+  registry[name] = newInfo
+  defaultOption[name] = false
+  suggestedOption[name] = newInfo.suggested
 }
 
 //#endregion
-
 
 //#region FolderFunc for Addon/Fold -----------------------------------------------------
 
@@ -139,15 +143,14 @@ export const CodeFolder: FolderFunc = (stream, token) => {
     token.type.indexOf('HyperMD-codeblock-begin') === -1 ||
     !/[-\w]+\s*$/.test(token.string)
   ) {
-    return null;
+    return null
   }
-  return getAddon(stream.cm).fold(stream, token);
+  return getAddon(stream.cm).fold(stream, token)
 }
 
-registerFolder("code", CodeFolder, true)
+registerFolder('code', CodeFolder, true)
 
 //#endregion
-
 
 /********************************************************************************** */
 //#region Addon Options
@@ -162,7 +165,7 @@ export const suggestedOption: Options = {
   /* will be populated by registerRenderer() */
 }
 
-export type OptionValueType = Options | boolean;
+export type OptionValueType = Options | boolean
 
 declare global {
   namespace HyperMD {
@@ -191,11 +194,10 @@ declare global {
 
 suggestedEditorConfig.hmdFoldCode = suggestedOption
 
-CodeMirror.defineOption("hmdFoldCode", defaultOption, function (cm: cm_t, newVal: OptionValueType) {
-
+CodeMirror.defineOption('hmdFoldCode', defaultOption, function (cm: cm_t, newVal: OptionValueType) {
   ///// convert newVal's type to `Record<string, boolean>`, if it is not.
 
-  if (!newVal || typeof newVal === "boolean") {
+  if (!newVal || typeof newVal === 'boolean') {
     newVal = newVal ? suggestedOption : defaultOption
   }
 
@@ -205,7 +207,6 @@ CodeMirror.defineOption("hmdFoldCode", defaultOption, function (cm: cm_t, newVal
     inst.setStatus(type, newVal[type])
   }
   // then, folding task will be queued by setStatus()
-
 })
 
 //#endregion
@@ -223,7 +224,7 @@ export class FoldCode implements Addon.Addon {
   private _enabled: Record<string, boolean> = {}
 
   /** renderers' output goes here */
-  public folded: Record<string, FoldInfo_Master[]> = {};
+  public folded: Record<string, FoldInfo_Master[]> = {}
 
   /** enable/disable one kind of renderer, in current editor */
   setStatus(type: string, enabled: boolean) {
@@ -242,30 +243,32 @@ export class FoldCode implements Addon.Addon {
     var folded = this.folded[type]
     if (!folded || !folded.length) return
     var info: FoldInfo_Master
-    while (info = folded.pop()) info.marker.clear()
+    while ((info = folded.pop())) info.marker.clear()
   }
 
-  constructor(public cm: cm_t) {
-  }
+  constructor(public cm: cm_t) {}
 
   fold(stream: FoldStream, token: CodeMirror.Token): CodeMirror.TextMarker {
-    if (token.start !== 0 || !token.type || token.type.indexOf('HyperMD-codeblock-begin') === -1) return null
+    if (token.start !== 0 || !token.type || token.type.indexOf('HyperMD-codeblock-begin') === -1)
+      return null
     var tmp = /([-\w]+)\s*$/.exec(token.string)
     var lang = tmp && tmp[1].toLowerCase()
     if (!lang) return null
 
-    let renderer: CodeRenderer;
-    let type: string;
+    let renderer: CodeRenderer
+    let type: string
 
-    var cm = this.cm, registry = rendererRegistry, _enabled = this._enabled
+    var cm = this.cm,
+      registry = rendererRegistry,
+      _enabled = this._enabled
     for (const type_i in registry) {
       let r = registry[type_i]
       if (!_enabled[type_i]) continue
       if (!(r.pattern as (lang: string) => boolean)(lang)) continue
 
-      type = type_i;
-      renderer = r.renderer;
-      break;
+      type = type_i
+      renderer = r.renderer
+      break
     }
 
     if (!type) return null
@@ -281,17 +284,17 @@ export class FoldCode implements Addon.Addon {
       let s = cm.getTokenAt({ line: endLine, ch: 1 })
       if (s && s.type && s.type.indexOf('HyperMD-codeblock-end') !== -1) {
         //FOUND END!
-        to = { line: endLine, ch: s.end };
-        break;
+        to = { line: endLine, ch: s.end }
+        break
       }
-    } while (++endLine < lastLineCM);
+    } while (++endLine < lastLineCM)
 
-    if (!to) return null;
+    if (!to) return null
 
     // request the range
 
-    let rngReq = stream.requestRange(from, to);
-    if (rngReq !== RequestRangeResult.OK) return null;
+    let rngReq = stream.requestRange(from, to)
+    if (rngReq !== RequestRangeResult.OK) return null
 
     // now we can call renderer
 
@@ -306,10 +309,10 @@ export class FoldCode implements Addon.Addon {
       changed: undefined_function,
     }
 
-    let el = info.el = renderer(code, info);
+    let el = (info.el = renderer(code, info))
     if (!el) {
-      info.marker.clear();
-      return null;
+      info.marker.clear()
+      return null
     }
 
     //-----------------------------
@@ -319,13 +322,12 @@ export class FoldCode implements Addon.Addon {
     $wrapper.style.minHeight = '1em'
     $wrapper.appendChild(el)
 
-
-    let lineWidget = info.lineWidget = cm.addLineWidget(to.line, $wrapper, {
+    let lineWidget = (info.lineWidget = cm.addLineWidget(to.line, $wrapper, {
       above: false,
       coverGutter: false,
       noHScroll: false,
       showIfHidden: false,
-    })
+    }))
 
     //-----------------------------
 
@@ -333,20 +335,20 @@ export class FoldCode implements Addon.Addon {
     $stub.className = stubClass + type
     $stub.textContent = '<CODE>'
 
-    let marker = info.marker = cm.markText(from, to, {
+    let marker = (info.marker = cm.markText(from, to, {
       replacedWith: $stub,
-    })
+    }))
 
     //-----------------------------
 
-    let highlightON = () => $stub.className = stubClassHighlight + type
-    let highlightOFF = () => $stub.className = stubClass + type
+    let highlightON = () => ($stub.className = stubClassHighlight + type)
+    let highlightOFF = () => ($stub.className = stubClass + type)
 
-    $wrapper.addEventListener("mouseenter", highlightON, false)
-    $wrapper.addEventListener("mouseleave", highlightOFF, false)
+    $wrapper.addEventListener('mouseenter', highlightON, false)
+    $wrapper.addEventListener('mouseleave', highlightOFF, false)
 
     info.changed = () => {
-      lineWidget.changed();
+      lineWidget.changed()
     }
 
     info.break = () => {
@@ -355,30 +357,35 @@ export class FoldCode implements Addon.Addon {
 
     $stub.addEventListener('click', info.break, false)
 
-    marker.on("clear", () => {
+    marker.on('clear', () => {
       var markers = this.folded[type]
       var idx: number
-      if (markers && (idx = markers.indexOf(info)) !== -1) markers.splice(idx, 1);
-      if (typeof info.onRemove === 'function') info.onRemove(info);
-      lineWidget.clear();
+      if (markers && (idx = markers.indexOf(info)) !== -1) markers.splice(idx, 1)
+      if (typeof info.onRemove === 'function') info.onRemove(info)
+      lineWidget.clear()
     })
 
-    if (!(type in this.folded)) this.folded[type] = [info];
-    else this.folded[type].push(info);
+    if (!(type in this.folded)) this.folded[type] = [info]
+    else this.folded[type].push(info)
 
-    return marker;
+    return marker
   }
 }
 
 //#endregion
 
+const contentClass = 'hmd-fold-code-content hmd-fold-code-' // + renderer_type
 
-const contentClass = "hmd-fold-code-content hmd-fold-code-" // + renderer_type
-
-const stubClass = "hmd-fold-code-stub hmd-fold-code-" // + renderer_type
-const stubClassHighlight = "hmd-fold-code-stub highlight hmd-fold-code-" // + renderer_type
-const undefined_function = () => { }
+const stubClass = 'hmd-fold-code-stub hmd-fold-code-' // + renderer_type
+const stubClassHighlight = 'hmd-fold-code-stub highlight hmd-fold-code-' // + renderer_type
+const undefined_function = () => {}
 
 /** ADDON GETTER (Singleton Pattern): a editor can have only one FoldCode instance */
-export const getAddon = Addon.Getter("FoldCode", FoldCode, defaultOption /** if has options */)
-declare global { namespace HyperMD { interface HelperCollection { FoldCode?: FoldCode } } }
+export const getAddon = Addon.Getter('FoldCode', FoldCode, defaultOption /** if has options */)
+declare global {
+  namespace HyperMD {
+    interface HelperCollection {
+      FoldCode?: FoldCode
+    }
+  }
+}

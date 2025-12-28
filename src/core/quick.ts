@@ -6,8 +6,8 @@
  * You shall NOT import this file; please import "core" instead
  */
 
-import * as CodeMirror from "codemirror"
-import { cm_t } from "./type"
+import * as CodeMirror from 'codemirror'
+import { cm_t } from './type'
 
 import 'codemirror/addon/fold/foldcode'
 import 'codemirror/addon/fold/foldgutter'
@@ -30,16 +30,16 @@ const HyperMD_Mark = '__hypermd__'
 export var suggestedEditorConfig: CodeMirror.EditorConfiguration = {
   lineNumbers: true,
   lineWrapping: true,
-  theme: "hypermd-light",
-  mode: "text/x-hypermd",
+  theme: 'hypermd-light',
+  mode: 'text/x-hypermd',
   tabSize: 4, // CommonMark specifies tab as 4 spaces
 
   autoCloseBrackets: true,
   foldGutter: true,
   gutters: [
-    "CodeMirror-linenumbers",
-    "CodeMirror-foldgutter",
-    "HyperMD-goback"  // (addon: click) 'back' button for footnotes
+    'CodeMirror-linenumbers',
+    'CodeMirror-foldgutter',
+    'HyperMD-goback', // (addon: click) 'back' button for footnotes
   ],
 }
 
@@ -50,7 +50,7 @@ export var suggestedEditorConfig: CodeMirror.EditorConfiguration = {
  * Addons about visual effects, shall update this object!
  */
 export var normalVisualConfig: CodeMirror.EditorConfiguration = {
-  theme: "default",
+  theme: 'default',
   /* eg. hmdFold: false, */
 }
 
@@ -83,14 +83,17 @@ export function fromTextArea(textArea: HTMLTextAreaElement, config?: object): cm
  *
  * @param {cm_t} editor Any CodeMirror Editor! Created by HyperMD.fromTextArea, or `switchToHyperMD`-ed
  */
-export function switchToNormal(editor: cm_t);
-export function switchToNormal(editor: cm_t, theme: string);
-export function switchToNormal(editor: cm_t, options: CodeMirror.EditorConfiguration);
-export function switchToNormal(editor: cm_t, options_or_theme?: CodeMirror.EditorConfiguration | string) {
+export function switchToNormal(editor: cm_t)
+export function switchToNormal(editor: cm_t, theme: string)
+export function switchToNormal(editor: cm_t, options: CodeMirror.EditorConfiguration)
+export function switchToNormal(
+  editor: cm_t,
+  options_or_theme?: CodeMirror.EditorConfiguration | string,
+) {
   // this CodeMirror editor has never been in HyperMD mode. `switchToNormal` is meanless
-  if (!editor[HyperMD_Mark]) return;
+  if (!editor[HyperMD_Mark]) return
 
-  if (typeof options_or_theme === 'string') options_or_theme = { theme: options_or_theme };
+  if (typeof options_or_theme === 'string') options_or_theme = { theme: options_or_theme }
   var opt = { ...normalVisualConfig, ...options_or_theme }
 
   for (const key in opt) {
@@ -103,12 +106,15 @@ export function switchToNormal(editor: cm_t, options_or_theme?: CodeMirror.Edito
  *
  * @param {cm_t} editor Any CodeMirror Editor! Created by HyperMD or CodeMirror
  */
-export function switchToHyperMD(editor: cm_t);
-export function switchToHyperMD(editor: cm_t, theme: string);
-export function switchToHyperMD(editor: cm_t, options: CodeMirror.EditorConfiguration);
-export function switchToHyperMD(editor: cm_t, options_or_theme?: CodeMirror.EditorConfiguration | string) {
-  if (typeof options_or_theme === 'string') options_or_theme = { theme: options_or_theme };
-  var opt: CodeMirror.EditorConfiguration = {};
+export function switchToHyperMD(editor: cm_t)
+export function switchToHyperMD(editor: cm_t, theme: string)
+export function switchToHyperMD(editor: cm_t, options: CodeMirror.EditorConfiguration)
+export function switchToHyperMD(
+  editor: cm_t,
+  options_or_theme?: CodeMirror.EditorConfiguration | string,
+) {
+  if (typeof options_or_theme === 'string') options_or_theme = { theme: options_or_theme }
+  var opt: CodeMirror.EditorConfiguration = {}
   if (HyperMD_Mark in editor) {
     // has been HyperMD mode once. Only modify visual-related options
     for (const key in normalVisualConfig) {
@@ -125,4 +131,3 @@ export function switchToHyperMD(editor: cm_t, options_or_theme?: CodeMirror.Edit
     editor.setOption(key, opt[key])
   }
 }
-

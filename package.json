@@ -20,7 +20,7 @@
     "dev": "vite",
     "build": "npm run build_css && tsc && vite build",
     "preview": "vite preview",
-    "lint": "eslint src --ext .ts",
+    "lint": "eslint src",
     "format": "prettier --write \"src/**/*.{ts,scss}\"",
     "build_css": "node dev/build-css.js",
     "build_doc": "cd dev/docgen && tsc && node ../tmp/index.js",
@@ -43,6 +43,7 @@
     "prettier": "^3.7.4",
     "sass": "^1.97.1",
     "typescript": "^5.9.3",
+    "typescript-eslint": "^8.50.1",
     "vite": "^7.3.0",
     "vite-plugin-dts": "^4.5.4"
   },

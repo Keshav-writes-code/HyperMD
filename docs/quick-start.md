@@ -8,12 +8,12 @@
 
 
 
-## with bundlers (webpack / parcel-bundler...)
+## with Vite / Webpack / Parcel
 
 First of all, run `npm install hypermd codemirror`
-and `npm install katex marked` (or you may skip latter two libs and remove `powerpack` parts from the code)
+and optional dependencies like `npm install katex marked`.
 
-Now, code time. Make a simple `index.html`
+Now, create a simple `index.html`:
 
 ```html
 <!DOCTYPE HTML>
@@ -23,160 +23,37 @@ Now, code time. Make a simple `index.html`
   </head>
   <body>
     <textarea id="myTextarea"># Hello World</textarea>
-
-    <script src="index.js"></script>
+    <script type="module" src="index.js"></script>
   </body>
 </html>
 ```
 
-And write several lines into `index.js`:
+And write your `index.js` (or `.ts`):
 
 ```js
-var HyperMD = require("hypermd")
-// some .css files will be implicitly imported by "hypermd"
-// you may get the list with HyperMD Dependency Walker
+import * as HyperMD from "hypermd"
+
+// Import CSS files
+import "hypermd/mode/hypermd.css"
+import "hypermd/theme/hypermd-light.css"
 
 // Load these modes if you want highlighting ...
-require("codemirror/mode/htmlmixed/htmlmixed") // for embedded HTML
-require("codemirror/mode/stex/stex") // for Math TeX Formular
-require("codemirror/mode/yaml/yaml") // for Front Matters
+import "codemirror/mode/htmlmixed/htmlmixed" // for embedded HTML
+import "codemirror/mode/stex/stex" // for Math TeX Formula
+import "codemirror/mode/yaml/yaml" // for Front Matters
 
 // Load PowerPacks if you want to utilize 3rd-party libs
-require("hypermd/powerpack/fold-math-with-katex") // implicitly requires "katex"
-require("hypermd/powerpack/hover-with-marked") // implicitly requires "marked"
-// and other power packs...
-// Power packs need 3rd-party libraries. Don't forget to install them!
+import "hypermd/powerpack/fold-math-with-katex" // implicitly requires "katex"
+import "hypermd/powerpack/hover-with-marked" // implicitly requires "marked"
 
 var myTextarea = document.getElementById("myTextarea")
 var cm = HyperMD.fromTextArea(myTextarea, {
   /* optional editor options here */
-  hmdModeLoader: false, // see NOTEs below
+  hmdModeLoader: false,
 })
 ```
 
-Let's say you are using [parcel-bundler][], simpily run `parcel index.html` and voila!
-If you are using **webpack**, make sure it's correctly configured(see below).
-
-> ***mode-loader* will be unavaliable**
->
-> Bundlers use closures, making CodeMirror invisible to global. You may...
-> Expose `CodeMirror` to global and set editor option `hmdModeLoader` to something like `"https://cdn.jsdelivr.net/npm/codemirror/"`.
-> Or load language modes via `require("codemirror/mode/haskell/haskell")` before creating a editor.
-
-
-### Notice for `webpack` users!
-
-HyperMD contains code like `require("xxx.css")` in order to import styles.
-Make sure you have these loader:
-
-` npm install -D  css-loader  style-loader  url-loader `
-
-Then, make sure your webpack config file looks like this:
-
-```js
-// webpack.config.js
-module.exports = {
-
-  /* ... other webpack config ... */
-
-  module: {
-    rules: [
-      {
-        test: /\.(png|jpg|gif|ttf|eot|woff|woff2)$/i,
-        use: [
-          {
-            loader: 'url-loader',
-            options: { limit: 8192 }
-          }
-        ]
-      },
-      {
-        test: /\.css$/,
-        use: [
-          { loader: "style-loader" },
-          { loader: "css-loader" }
-        ]
-      },
-      /* ... your other loader ... */
-    ]
-  }
-}
-```
-
-
-
-## with [RequireJS](http://requirejs.org/) the module loader
-
-[**🙋 Example Here**](./examples/basic-requirejs.html)
-
-First of all, *hypermd* requires CSS files in JavaScript, and RequireJS doesn't support `require("./style.css")`.
-Thus, when RequireJS is loaded, before using it, **load [this patch to make RequireJS support css files](../goods/patch-requirejs.js)**
-
-(This patch can be found in HyperMD package. Its file path is  `goods/patch-requirejs.js` and you can load it via some URL like `https://laobubu.net/HyperMD/goods/patch-requirejs.js` )
-
-As for the `packages` field, [this reference](../demo/requirejs_packages.js) can be helpful.
-
-```js
-
-// 1. Configure RequireJS
-
-requirejs.config({
-  // baseUrl: "/node_modules/",                  // using local version
-  // baseUrl: "https://cdn.jsdelivr.net/npm/",   // or use CDN
-  baseUrl: "/node_modules/",
-
-  // (Remove this section if you occur errors with CDN)
-  // RequireJS doesn't read package.json. Let's tell it the entries of modules.
-  packages: [
-    { name: 'hypermd', main: 'everything.js' },
-    { name: 'codemirror', main: 'lib/codemirror.js' },
-    { name: 'mathjax', main: 'MathJax.js' },
-    { name: 'katex', main: 'dist/katex.min.js' },
-    { name: 'marked', main: 'lib/marked.js' },
-    { name: 'turndown', main: 'lib/turndown.browser.umd.js' },
-    { name: 'turndown-plugin-gfm', main: 'dist/turndown-plugin-gfm.js' },
-    { name: 'emojione', main: 'lib/js/emojione.min.js' },
-    { name: 'twemoji', main: '2/twemoji.amd.js' },
-    // ... more 3rd parties
-  ],
-  waitSeconds: 15
-})
-
-// 2. Declare your main module
-
-require([
-  'codemirror/lib/codemirror',
-  'hypermd/everything',  // Want to tailor and pick components? Please see demo/index.js
-
-  // Load these modes if you want highlighting ...
-  "codemirror/mode/htmlmixed/htmlmixed", // for embedded HTML
-  "codemirror/mode/stex/stex", // for Math TeX Formular
-  "codemirror/mode/yaml/yaml", // for Front Matters
-
-  // Then, use PowerPack to power-up HyperMD, with third-party libraries
-  // The list can be found in documents, or demo/index.js
-  'hypermd/powerpack/fold-math-with-katex',
-
-  'hypermd/powerpack/paste-with-turndown',
-  'turndown-plugin-gfm',
-
-], function (CodeMirror, HyperMD) {
-  var myTextarea = document.getElementById('myTextareaID')
-  var editor = HyperMD.fromTextArea(myTextarea, {
-    /* optional editor options here */
-  })
-})
-
-```
-
-
-
-
-## with plain HTML
-
-Don't want to use either bundler or module loader? You can still load HyperMD in plain browser environment.
-
-Please read the source code of [this demo](./examples/ai1.html)
+Start your bundler (e.g., `vite`) and you are good to go!
 
 
 

@@ -16,7 +16,8 @@ import { cm_t } from '../core/type'
 /********************************************************************************** */
 // Some parameter LGTM
 
-const silenceDuration = 100, distance = 5
+const silenceDuration = 100,
+  distance = 5
 
 /********************************************************************************** */
 //#region Addon Options
@@ -31,10 +32,10 @@ export const defaultOption: Options = {
 }
 
 export const suggestedOption: Partial<Options> = {
-  enabled: true,  // works good with hide-token
+  enabled: true, // works good with hide-token
 }
 
-export type OptionValueType = Partial<Options> | boolean;
+export type OptionValueType = Partial<Options> | boolean
 
 declare global {
   namespace HyperMD {
@@ -51,21 +52,24 @@ declare global {
 
 suggestedEditorConfig.hmdCursorDebounce = suggestedOption
 
-CodeMirror.defineOption("hmdCursorDebounce", defaultOption, function (cm: cm_t, newVal: OptionValueType) {
+CodeMirror.defineOption(
+  'hmdCursorDebounce',
+  defaultOption,
+  function (cm: cm_t, newVal: OptionValueType) {
+    ///// convert newVal's type to `Partial<Options>`, if it is not.
 
-  ///// convert newVal's type to `Partial<Options>`, if it is not.
+    if (!newVal || typeof newVal === 'boolean') {
+      newVal = { enabled: !!newVal }
+    }
 
-  if (!newVal || typeof newVal === "boolean") {
-    newVal = { enabled: !!newVal }
-  }
+    ///// apply config and write new values into cm
 
-  ///// apply config and write new values into cm
-
-  var inst = getAddon(cm)
-  for (var k in defaultOption) {
-    inst[k] = (k in newVal) ? newVal[k] : defaultOption[k]
-  }
-})
+    var inst = getAddon(cm)
+    for (var k in defaultOption) {
+      inst[k] = k in newVal ? newVal[k] : defaultOption[k]
+    }
+  },
+)
 
 //#endregion
 
@@ -73,13 +77,17 @@ CodeMirror.defineOption("hmdCursorDebounce", defaultOption, function (cm: cm_t, 
 //#region Addon Class
 
 export class CursorDebounce implements Addon.Addon, Options /* if needed */ {
-  enabled: boolean;
+  enabled: boolean
 
   constructor(public cm: cm_t) {
     new FlipFlop(
-      /* ON  */() => { cm.on('mousedown', this.mouseDownHandler as any) },
-      /* OFF */() => { cm.off('mousedown', this.mouseDownHandler as any) }
-    ).bind(this, "enabled", true)
+      /* ON  */ () => {
+        cm.on('mousedown', this.mouseDownHandler as any)
+      },
+      /* OFF */ () => {
+        cm.off('mousedown', this.mouseDownHandler as any)
+      },
+    ).bind(this, 'enabled', true)
   }
 
   private lastX: number
@@ -90,17 +98,20 @@ export class CursorDebounce implements Addon.Addon, Options /* if needed */ {
     this.lastX = ev.clientX
     this.lastY = ev.clientY
     const supressor = this.mouseMoveSuppress
-    document.addEventListener("mousemove", supressor, true)
+    document.addEventListener('mousemove', supressor, true)
 
     if (this.lastTimeout) clearTimeout(this.lastTimeout)
     this.lastTimeout = setTimeout(() => {
-      document.removeEventListener("mousemove", supressor, true)
+      document.removeEventListener('mousemove', supressor, true)
       this.lastTimeout = null
     }, silenceDuration)
   }
 
   private mouseMoveSuppress = (ev: MouseEvent) => {
-    if ((Math.abs(ev.clientX - this.lastX) <= distance) && (Math.abs(ev.clientY - this.lastY) <= distance))
+    if (
+      Math.abs(ev.clientX - this.lastX) <= distance &&
+      Math.abs(ev.clientY - this.lastY) <= distance
+    )
       ev.stopPropagation()
   }
 }
@@ -108,5 +119,15 @@ export class CursorDebounce implements Addon.Addon, Options /* if needed */ {
 //#endregion
 
 /** ADDON GETTER (Singleton Pattern): a editor can have only one CursorDebounce instance */
-export const getAddon = Addon.Getter("CursorDebounce", CursorDebounce, defaultOption /** if has options */)
-declare global { namespace HyperMD { interface HelperCollection { CursorDebounce?: CursorDebounce } } }
+export const getAddon = Addon.Getter(
+  'CursorDebounce',
+  CursorDebounce,
+  defaultOption /** if has options */,
+)
+declare global {
+  namespace HyperMD {
+    interface HelperCollection {
+      CursorDebounce?: CursorDebounce
+    }
+  }
+}
