@@ -1,4 +1,4 @@
-declare module "flowchart.js" {
+declare module 'flowchart.js' {
   class Diagram {
     drawSVG(containerID: string | HTMLElement, options?: any): void
     clean(): void

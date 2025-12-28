@@ -8,7 +8,6 @@ import * as CodeMirror from 'codemirror'
 import { Addon, debounce, suggestedEditorConfig } from '../core'
 import { cm_t } from '../core/type'
 
-
 /********************************************************************************** */
 
 export interface Link {
@@ -25,7 +24,8 @@ export type CacheDB = { [lowerTrimmedKey: string]: Link[] }
 export function splitLink(content: string) {
   // remove title part (if exists)
   content = content.trim()
-  var url = content, title = ""
+  var url = content,
+    title = ''
   var mat = content.match(/^(\S+)\s+("(?:[^"\\]+|\\.)+"|[^"\s].*)/)
   if (mat) {
     url = mat[1]
@@ -67,7 +67,11 @@ export const Extensions = {
 }
 
 export type ExtensionsType = typeof Extensions
-declare global { namespace HyperMD { interface Editor extends ExtensionsType { } } }
+declare global {
+  namespace HyperMD {
+    interface Editor extends ExtensionsType {}
+  }
+}
 
 for (var name in Extensions) {
   CodeMirror.defineExtension(name, Extensions[name])
@@ -89,14 +93,14 @@ export interface Options extends Addon.AddonOptions {
 }
 
 export const defaultOption: Options = {
-  baseURI: "",
+  baseURI: '',
 }
 
 export const suggestedOption: Partial<Options> = {
-  baseURI: "",
+  baseURI: '',
 }
 
-export type OptionValueType = Partial<Options> | string;
+export type OptionValueType = Partial<Options> | string
 
 declare global {
   namespace HyperMD {
@@ -113,11 +117,10 @@ declare global {
 
 suggestedEditorConfig.hmdReadLink = suggestedOption
 
-CodeMirror.defineOption("hmdReadLink", defaultOption, function (cm: cm_t, newVal: OptionValueType) {
-
+CodeMirror.defineOption('hmdReadLink', defaultOption, function (cm: cm_t, newVal: OptionValueType) {
   ///// convert newVal's type to `Partial<Options>`, if it is not.
 
-  if (!newVal || typeof newVal === "string") {
+  if (!newVal || typeof newVal === 'string') {
     newVal = { baseURI: newVal as string }
   }
 
@@ -125,7 +128,7 @@ CodeMirror.defineOption("hmdReadLink", defaultOption, function (cm: cm_t, newVal
 
   var inst = getAddon(cm)
   for (var k in defaultOption) {
-    inst[k] = (k in newVal) ? newVal[k] : defaultOption[k]
+    inst[k] = k in newVal ? newVal[k] : defaultOption[k]
   }
 })
 
@@ -139,10 +142,11 @@ export class ReadLink implements Addon.Addon, Options {
 
   cache: CacheDB = {}
 
-  constructor(
-    public cm: cm_t
-  ) {
-    cm.on("changes", debounce(() => this.rescan(), 500))
+  constructor(public cm: cm_t) {
+    cm.on(
+      'changes',
+      debounce(() => this.rescan(), 500),
+    )
     this.rescan()
   }
 
@@ -156,11 +160,11 @@ export class ReadLink implements Addon.Addon, Options {
    * @param footNoteName case-insensive name, without "[" or "]"
    * @param line         current line. if not set, the first definition will be returned
    */
-  read(footNoteName: string, line?: number): (Link | void) {
+  read(footNoteName: string, line?: number): Link | void {
     var defs = this.cache[footNoteName.trim().toLowerCase()] || []
     var def: Link
 
-    if (typeof line !== "number") line = 1e9
+    if (typeof line !== 'number') line = 1e9
     for (var i = 0; i < defs.length; i++) {
       def = defs[i]
       if (def.line > line) break
@@ -176,9 +180,11 @@ export class ReadLink implements Addon.Addon, Options {
     const cm = this.cm
     var cache: CacheDB = (this.cache = {})
     cm.eachLine((line) => {
-      var txt = line.text, mat = /^(?:>\s+)*>?\s{0,3}\[([^\]]+)\]:\s*(.+)$/.exec(txt)
+      var txt = line.text,
+        mat = /^(?:>\s+)*>?\s{0,3}\[([^\]]+)\]:\s*(.+)$/.exec(txt)
       if (mat) {
-        var key = mat[1].trim().toLowerCase(), content = mat[2]
+        var key = mat[1].trim().toLowerCase(),
+          content = mat[2]
         if (!cache[key]) cache[key] = []
         cache[key].push({
           line: line.lineNo(),
@@ -200,16 +206,17 @@ export class ReadLink implements Addon.Addon, Options {
    *     resolve("/world.png", "http://laobubu.net/xxx/foo/") // => "http://laobubu.net/world.png"
    */
   resolve(uri: string, baseURI?: string) {
-    const emailRE = /^(([^<>()[\]\\.,;:\s@\"]+(\.[^<>()[\]\\.,;:\s@\"]+)*)|(\".+\"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))$/
+    const emailRE =
+      /^(([^<>()[\]\\.,;:\s@\"]+(\.[^<>()[\]\\.,;:\s@\"]+)*)|(\".+\"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))$/
 
     const hostExtract = /^(?:[\w-]+\:\/*|\/\/)[^\/]+/
     const levelupRE = /\/[^\/]+(?:\/+\.?)*$/
 
     if (!uri) return uri
-    if (emailRE.test(uri)) return "mailto:" + uri
+    if (emailRE.test(uri)) return 'mailto:' + uri
 
     var tmp: RegExpMatchArray
-    var host = ""
+    var host = ''
 
     baseURI = baseURI || this.baseURI
 
@@ -217,20 +224,20 @@ export class ReadLink implements Addon.Addon, Options {
     if (!baseURI || hostExtract.test(uri)) return uri
 
     // try to extract scheme+host like http://laobubu.net without tailing slash
-    if (tmp = baseURI.match(hostExtract)) {
-      host = tmp[0];
+    if ((tmp = baseURI.match(hostExtract))) {
+      host = tmp[0]
       baseURI = baseURI.slice(host.length)
     }
 
-    while (tmp = uri.match(/^(\.{1,2})([\/\\]+)/)) {
+    while ((tmp = uri.match(/^(\.{1,2})([\/\\]+)/))) {
       uri = uri.slice(tmp[0].length)
-      if (tmp[1] == "..") baseURI = baseURI.replace(levelupRE, "")
+      if (tmp[1] == '..') baseURI = baseURI.replace(levelupRE, '')
     }
 
     if (uri.charAt(0) === '/' && host) {
       uri = host + uri
     } else {
-      if (!/\/$/.test(baseURI)) baseURI += "/"
+      if (!/\/$/.test(baseURI)) baseURI += '/'
       uri = host + baseURI + uri
     }
 
@@ -241,5 +248,11 @@ export class ReadLink implements Addon.Addon, Options {
 //#endregion
 
 /** ADDON GETTER (Singleton Pattern): a editor can have only one ReadLink instance */
-export const getAddon = Addon.Getter("ReadLink", ReadLink, defaultOption /** if has options */)
-declare global { namespace HyperMD { interface HelperCollection { ReadLink?: ReadLink } } }
+export const getAddon = Addon.Getter('ReadLink', ReadLink, defaultOption /** if has options */)
+declare global {
+  namespace HyperMD {
+    interface HelperCollection {
+      ReadLink?: ReadLink
+    }
+  }
+}

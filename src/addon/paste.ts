@@ -32,7 +32,7 @@ export const suggestedOption: Partial<Options> = {
   enabled: true,
 }
 
-export type OptionValueType = Partial<Options> | boolean | PasteConvertor;
+export type OptionValueType = Partial<Options> | boolean | PasteConvertor
 
 declare global {
   namespace HyperMD {
@@ -51,13 +51,12 @@ declare global {
 
 suggestedEditorConfig.hmdPaste = suggestedOption
 
-CodeMirror.defineOption("hmdPaste", defaultOption, function (cm: cm_t, newVal: OptionValueType) {
-
+CodeMirror.defineOption('hmdPaste', defaultOption, function (cm: cm_t, newVal: OptionValueType) {
   ///// convert newVal's type to `Partial<Options>`, if it is not.
 
-  if (!newVal || typeof newVal === "boolean") {
+  if (!newVal || typeof newVal === 'boolean') {
     newVal = { enabled: !!newVal }
-  } else if (typeof newVal === "function") {
+  } else if (typeof newVal === 'function') {
     newVal = { enabled: true, convertor: newVal }
   }
 
@@ -65,7 +64,7 @@ CodeMirror.defineOption("hmdPaste", defaultOption, function (cm: cm_t, newVal: O
 
   var inst = getAddon(cm)
   for (var k in defaultOption) {
-    inst[k] = (k in newVal) ? newVal[k] : defaultOption[k]
+    inst[k] = k in newVal ? newVal[k] : defaultOption[k]
   }
 })
 
@@ -75,14 +74,18 @@ CodeMirror.defineOption("hmdPaste", defaultOption, function (cm: cm_t, newVal: O
 //#region Addon Class
 
 export class Paste implements Addon.Addon, Options /* if needed */ {
-  enabled: boolean;
-  convertor: PasteConvertor;
+  enabled: boolean
+  convertor: PasteConvertor
 
   constructor(public cm: cm_t) {
     new FlipFlop(
-      /* ON  */() => { cm.on('paste', this.pasteHandler as any) },
-      /* OFF */() => { cm.off('paste', this.pasteHandler as any) }
-    ).bind(this, "enabled", true)
+      /* ON  */ () => {
+        cm.on('paste', this.pasteHandler as any)
+      },
+      /* OFF */ () => {
+        cm.off('paste', this.pasteHandler as any)
+      },
+    ).bind(this, 'enabled', true)
   }
 
   private pasteHandler = (cm: cm_t, ev: ClipboardEvent) => {
@@ -102,5 +105,11 @@ export class Paste implements Addon.Addon, Options /* if needed */ {
 //#endregion
 
 /** ADDON GETTER (Singleton Pattern): a editor can have only one Paste instance */
-export const getAddon = Addon.Getter("Paste", Paste, defaultOption /** if has options */)
-declare global { namespace HyperMD { interface HelperCollection { Paste?: Paste } } }
+export const getAddon = Addon.Getter('Paste', Paste, defaultOption /** if has options */)
+declare global {
+  namespace HyperMD {
+    interface HelperCollection {
+      Paste?: Paste
+    }
+  }
+}

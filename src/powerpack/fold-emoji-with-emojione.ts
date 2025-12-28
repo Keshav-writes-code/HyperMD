@@ -19,15 +19,16 @@ import 'emojione/extras/css/emojione.min.css'
 /** emojione doesn't have AMD declaration. load it from browser if needed */
 var emojione: typeof _emojione_module = _emojione_module || (window as any)['emojione']
 
-export const emojioneChecker: EmojiChecker = (text) => emojione && emojione.shortnameToUnicode(text) != text;
+export const emojioneChecker: EmojiChecker = (text) =>
+  emojione && emojione.shortnameToUnicode(text) != text
 export const emojioneRenderer: EmojiRenderer = (text) => {
   var html = emojione.shortnameToImage(text)
   if (!/^<img /i.test(html)) return null
 
   var attr = /([\w-]+)="(.+?)"/g
-  var ans = document.createElement("img")
+  var ans = document.createElement('img')
   var t: RegExpMatchArray
-  while (t = attr.exec(html)) ans.setAttribute(t[1], t[2])
+  while ((t = attr.exec(html))) ans.setAttribute(t[1], t[2])
   return ans
 }
 
@@ -36,5 +37,5 @@ if (emojione) {
   defaultOption.emojiChecker = emojioneChecker
   defaultOption.emojiRenderer = emojioneRenderer
 } else {
-  console.error("[HyperMD] PowerPack fold-emoji-with-emojione loaded, but emojione not found.")
+  console.error('[HyperMD] PowerPack fold-emoji-with-emojione loaded, but emojione not found.')
 }

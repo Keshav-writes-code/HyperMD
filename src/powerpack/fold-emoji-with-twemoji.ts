@@ -12,7 +12,14 @@
 //
 
 import * as _twemoji_module from 'twemoji'
-import { defaultOption, defaultChecker, defaultRenderer, EmojiRenderer, defaultDict, EmojiChecker } from '../addon/fold-emoji'
+import {
+  defaultOption,
+  defaultChecker,
+  defaultRenderer,
+  EmojiRenderer,
+  defaultDict,
+  EmojiChecker,
+} from '../addon/fold-emoji'
 
 /** twemoji */
 var twemoji: typeof _twemoji_module = _twemoji_module || (window as any)['twemoji']
@@ -31,12 +38,12 @@ export const twemojiRenderer: EmojiRenderer = (text) => {
   var html = twemojiOptions ? twemoji.parse(emojiStr, twemojiOptions) : twemoji.parse(emojiStr)
 
   // If twemoji failed to render, fallback to defaultRenderer
-  if (!/^<img /i.test(html)) return defaultRenderer(text);
+  if (!/^<img /i.test(html)) return defaultRenderer(text)
 
   var attr = /([\w-]+)="(.+?)"/g
-  var ans = document.createElement("img")
+  var ans = document.createElement('img')
   var t: RegExpMatchArray
-  while (t = attr.exec(html)) ans.setAttribute(t[1], t[2])
+  while ((t = attr.exec(html))) ans.setAttribute(t[1], t[2])
   return ans
 }
 
@@ -45,5 +52,5 @@ if (twemoji) {
   defaultOption.emojiChecker = twemojiChecker
   defaultOption.emojiRenderer = twemojiRenderer
 } else {
-  console.error("[HyperMD] PowerPack fold-emoji-with-twemoji loaded, but twemoji not found.")
+  console.error('[HyperMD] PowerPack fold-emoji-with-twemoji loaded, but twemoji not found.')
 }

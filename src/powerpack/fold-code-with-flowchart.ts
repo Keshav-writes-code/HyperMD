@@ -26,10 +26,10 @@
 // })
 // ```
 
-import * as CodeMirror from "codemirror"
-import * as flowchart from "flowchart.js"
-import { registerRenderer, CodeRenderer, getAddon as getFoldCode } from "../addon/fold-code"
-import { getAddon as getFold } from "../addon/fold"
+import * as CodeMirror from 'codemirror'
+import * as flowchart from 'flowchart.js'
+import { registerRenderer, CodeRenderer, getAddon as getFoldCode } from '../addon/fold-code'
+import { getAddon as getFold } from '../addon/fold'
 
 export const FlowchartRenderer: CodeRenderer = (code, info) => {
   var fc = flowchart.parse(code)
@@ -40,15 +40,20 @@ export const FlowchartRenderer: CodeRenderer = (code, info) => {
 
   // tell Raphael the viewport width
   var tmpContainer = document.createElement('div')
-  tmpContainer.setAttribute('style', 'position: absolute;left:0;top:0;width:' + info.editor.getScrollInfo().clientWidth + 'px;height:1px;overflow:hidden')
+  tmpContainer.setAttribute(
+    'style',
+    'position: absolute;left:0;top:0;width:' +
+      info.editor.getScrollInfo().clientWidth +
+      'px;height:1px;overflow:hidden',
+  )
   document.body.appendChild(tmpContainer)
   tmpContainer.appendChild(el)
 
-  fc.drawSVG(el, info.editor.getOption("flowchart"))
+  fc.drawSVG(el, info.editor.getOption('flowchart'))
 
   setTimeout(() => {
     document.body.removeChild(tmpContainer)
-  }, 100);
+  }, 100)
 
   info.onRemove = () => {
     fc.clean()
@@ -58,18 +63,18 @@ export const FlowchartRenderer: CodeRenderer = (code, info) => {
   return el
 }
 
-if (typeof flowchart === "object") {
-  CodeMirror.defineOption("flowchart", null, (cm: CodeMirror.Editor) => {
-    getFoldCode(cm).clear("flowchart")
+if (typeof flowchart === 'object') {
+  CodeMirror.defineOption('flowchart', null, (cm: CodeMirror.Editor) => {
+    getFoldCode(cm).clear('flowchart')
     getFold(cm).startFold()
-  });
+  })
 
   registerRenderer({
-    name: "flowchart",
+    name: 'flowchart',
     pattern: /^flow(?:charts?)?$/i,
     renderer: FlowchartRenderer,
     suggested: true,
   })
 } else {
-  console.error("[HyperMD] PowerPack fold-code-with-flowchart loaded, but flowchart not found.")
+  console.error('[HyperMD] PowerPack fold-code-with-flowchart loaded, but flowchart not found.')
 }
