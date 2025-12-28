@@ -16,6 +16,8 @@ cache/
 !dev/**/*.js
 !test/**/*.js
 !rollup.config.js
+!eslint.config.js
+!vite.config.js
 
 *.css
 !demo/**/*.css
@@ -31,4 +33,4 @@ docs/options-for-addons.md
 docs/powerpacks.md
 
 # Auto Generated Files. See dev/pre-build.js
-src/everything.ts
+!src/everything.ts
