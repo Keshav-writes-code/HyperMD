@@ -16,6 +16,8 @@ cache/
 !dev/**/*.js
 !test/**/*.js
 !rollup.config.js
+!eslint.config.js
+!vite.config.js
 
 *.css
 !demo/**/*.css
@@ -24,7 +26,6 @@ cache/
 npm-debug.log*
 yarn-debug.log*
 yarn-error.log*
-package-lock.json
 yarn.lock
 
 # Auto Generated Docs. See dev/docgen/index.ts
@@ -32,4 +33,4 @@ docs/options-for-addons.md
 docs/powerpacks.md
 
 # Auto Generated Files. See dev/pre-build.js
-src/everything.ts
+!src/everything.ts

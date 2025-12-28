@@ -10,7 +10,7 @@
 
 ## with Vite / Webpack / Parcel
 
-First of all, run `npm install hypermd codemirror`
+First of all, run `npm install hypermd_uplift codemirror`
 and optional dependencies like `npm install katex marked`.
 
 Now, create a simple `index.html`:
@@ -31,11 +31,11 @@ Now, create a simple `index.html`:
 And write your `index.js` (or `.ts`):
 
 ```js
-import * as HyperMD from "hypermd"
+import * as HyperMD from "hypermd_uplift"
 
 // Import CSS files
-import "hypermd/mode/hypermd.css"
-import "hypermd/theme/hypermd-light.css"
+import "hypermd_uplift/mode/hypermd.css"
+import "hypermd_uplift/theme/hypermd-light.css"
 
 // Load these modes if you want highlighting ...
 import "codemirror/mode/htmlmixed/htmlmixed" // for embedded HTML
@@ -43,8 +43,8 @@ import "codemirror/mode/stex/stex" // for Math TeX Formula
 import "codemirror/mode/yaml/yaml" // for Front Matters
 
 // Load PowerPacks if you want to utilize 3rd-party libs
-import "hypermd/powerpack/fold-math-with-katex" // implicitly requires "katex"
-import "hypermd/powerpack/hover-with-marked" // implicitly requires "marked"
+import "hypermd_uplift/powerpack/fold-math-with-katex" // implicitly requires "katex"
+import "hypermd_uplift/powerpack/hover-with-marked" // implicitly requires "marked"
 
 var myTextarea = document.getElementById("myTextarea")
 var cm = HyperMD.fromTextArea(myTextarea, {

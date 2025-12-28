@@ -13,9 +13,16 @@
 
 ## [Quickstart](./docs/quick-start.md)
 
+### Installation
+
+```bash
+npm install hypermd_uplift codemirror
+```
+
+### Usage
+
 ```javascript
-// npm install --save hypermd codemirror
-import * as HyperMD from 'hypermd'
+import * as HyperMD from 'hypermd_uplift'
 var myTextarea = document.getElementById('input-area')
 var editor = HyperMD.fromTextArea(myTextarea)
 ```
