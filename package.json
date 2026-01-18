@@ -1,6 +1,6 @@
 {
   "name": "hypermd-uplift",
-  "version": "0.4.0",
+  "version": "0.4.3",
   "description": "A WYSIWYG Markdown editor for the modern web, based on CodeMirror 5.",
   "type": "module",
   "main": "./dist/index.umd.cjs",
